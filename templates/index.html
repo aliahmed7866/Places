@@ -12,44 +12,51 @@
       <div>
         <p class="kicker">YOUR PERSONAL ATLAS</p>
         <h1>Places<span>.</span></h1>
-        <p class="intro">Your trips, memories and travel days in one local-first journal.</p>
+        <p class="intro">Your world, your memories, your next adventure.</p>
       </div>
       <button id="add-place" class="primary">＋ Add a place</button>
     </header>
 
     <nav class="view-tabs" aria-label="Places views">
-      <button class="active" data-view="calendar">Calendar</button>
-      <button data-view="journal">Journal</button>
+      <button class="active" data-view="map" aria-pressed="true">Map</button>
+      <button data-view="calendar" aria-pressed="false">Planner</button>
+      <button data-view="journal" aria-pressed="false">Journal</button>
     </nav>
 
-    <section id="calendar-view" class="view active">
-      <div class="calendar-head">
-        <div>
-          <p class="kicker">MY YEAR IN TRAVEL</p>
-          <h2>Travel calendar</h2>
-        </div>
-        <div class="year-picker">
-          <button id="prev-year" aria-label="Previous year">‹</button>
-          <strong id="calendar-year">{{ current_year }}</strong>
-          <button id="next-year" aria-label="Next year">›</button>
-        </div>
+    <p id="app-message" role="status" aria-live="polite"></p>
+    <section id="map-view" class="view active" aria-labelledby="atlas-title">
+      <div class="stats" aria-label="Travel totals">
+        <div><strong id="countries-total">0</strong><span>countries visited</span></div>
+        <div><strong id="days-total">0</strong><span>travel days</span></div>
+        <div><strong id="trips-total">0</strong><span>visited entries</span></div>
+        <div><strong id="wishlist-total">0</strong><span>wishlist entries</span></div>
       </div>
-      <div class="calendar-summary" id="calendar-summary"></div>
-      <div class="year-grid" id="year-grid" aria-live="polite"></div>
-      <p class="calendar-note">Travel days are filled from each visited entry's start and end dates. Border-crossing days can show more than one flag.</p>
+      <div class="atlas-heading"><div><p class="kicker">THE BIG PICTURE</p><h2 id="atlas-title">Your world, unfolding.</h2></div><button id="plan-trip" class="primary">＋ Plan a trip</button></div>
+      <div class="map-legend"><span class="visited-key">● Visited</span><span class="planned-key">● Planned</span><span class="wishlist-key">● Wishlist</span></div>
+      <div class="map-window" id="map-window"><div id="world-map" aria-label="World map"></div></div>
+      <div class="map-footer"><span id="map-caption">Tap a country to add a place or plan.</span><div><button class="icon" id="zoom-out" aria-label="Zoom out">−</button><button class="icon" id="zoom-reset">Reset</button><button class="icon" id="zoom-in" aria-label="Zoom in">＋</button></div></div>
+      <p class="calendar-note">Map: Natural Earth. Small islands and boundaries are simplified; all countries remain available in Add a place.</p>
+    </section>
+
+    <section id="calendar-view" class="view" hidden aria-labelledby="planner-title">
+      <div class="calendar-head"><div><p class="kicker">WHERE NEXT?</p><h2 id="planner-title">Your travel planner</h2></div><button id="add-plan" class="primary">＋ Add country & dates</button></div>
+      <p class="intro">Tap a day, choose a country and set an end date for a longer trip.</p>
+      <div class="planner-controls">
+        <div class="year-picker"><button id="prev-year" aria-label="Previous period">‹</button><strong id="calendar-year">{{ current_year }}</strong><button id="next-year" aria-label="Next period">›</button></div>
+        <div class="date-selectors"><select id="planner-month" aria-label="Month">{% for month in ['January','February','March','April','May','June','July','August','September','October','November','December'] %}<option value="{{ loop.index0 }}">{{ month }}</option>{% endfor %}</select><input id="planner-year" type="number" min="1900" max="2200" value="{{ current_year }}" aria-label="Year"></div>
+        <button class="icon" id="calendar-mode" aria-pressed="false">Year overview</button>
+      </div>
+      <div class="calendar-summary" id="calendar-summary" role="status"></div>
+      <div class="year-grid month-mode" id="year-grid"></div>
+      <p class="calendar-note">Flags mark your countries on each day. Planned trips are outlined; visited days are filled. Tap a flagged day to edit its entries or add another country.</p>
     </section>
 
     <section id="journal-view" class="view" hidden>
-      <div class="stats" aria-label="Travel totals">
-        <div><strong id="countries-total">0</strong><span>countries</span></div>
-        <div><strong id="days-total">0</strong><span>travel days</span></div>
-        <div><strong id="trips-total">0</strong><span>visited entries</span></div>
-        <div><strong id="wishlist-total">0</strong><span>wishlist</span></div>
-      </div>
       <div class="journal-tools">
         <div class="filters">
           <button class="active" data-filter="all">All</button>
           <button data-filter="visited">Visited</button>
+          <button data-filter="planned">Planned</button>
           <button data-filter="wishlist">Wishlist</button>
         </div>
         <input id="search" type="search" placeholder="Search places or memories…" aria-label="Search places">
@@ -59,15 +66,16 @@
     </section>
   </main>
 
-  <dialog id="place-dialog">
+  <dialog id="place-dialog" aria-labelledby="dialog-title">
     <form id="place-form">
       <div class="dialog-head"><div><p class="kicker">MAKE A LITTLE HISTORY</p><h2 id="dialog-title">Add a place</h2></div><button type="button" id="close-dialog" class="icon">✕</button></div>
+      <div id="day-entries" class="day-entries" hidden></div>
       <label>Country<select name="country" required><option value="">Choose a country…</option>{% for country in countries %}<option value="{{ country.code }}">{{ country.name }}</option>{% endfor %}</select></label>
       <label>Town, region or sight <span>(optional)</span><input name="place" maxlength="120" placeholder="e.g. Mestia, Svaneti"></label>
-      <label>Status<select name="status"><option value="visited">Visited</option><option value="wishlist">Wishlist</option></select></label>
+      <label>Status<select name="status"><option value="visited">Visited</option><option value="planned">Planned</option><option value="wishlist">Wishlist</option></select></label>
       <div id="date-fields" class="date-row">
-        <label>From <input type="date" name="start_date"></label>
-        <label>To <input type="date" name="end_date"></label>
+        <label>From <input type="date" name="start_date" min="1900-01-01" max="2200-12-31"></label>
+        <label>To <span>(optional)</span><input type="date" name="end_date" min="1900-01-01" max="2200-12-31"></label>
       </div>
       <label>Memory / note <span>(optional)</span><textarea name="notes" rows="4" maxlength="4000" placeholder="What do you want to remember?"></textarea></label>
       <p id="form-error" class="error" role="alert"></p>
