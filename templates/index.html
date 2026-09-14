@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Places</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='places.css') }}">
+</head>
+<body>
+  <main class="shell" data-api="{{ url_for('list_places') }}" data-current-year="{{ current_year }}">
+    <header class="hero">
+      <div>
+        <p class="kicker">YOUR PERSONAL ATLAS</p>
+        <h1>Places<span>.</span></h1>
+        <p class="intro">Your trips, memories and travel days in one local-first journal.</p>
+      </div>
+      <button id="add-place" class="primary">＋ Add a place</button>
+    </header>
+
+    <nav class="view-tabs" aria-label="Places views">
+      <button class="active" data-view="calendar">Calendar</button>
+      <button data-view="journal">Journal</button>
+    </nav>
+
+    <section id="calendar-view" class="view active">
+      <div class="calendar-head">
+        <div>
+          <p class="kicker">MY YEAR IN TRAVEL</p>
+          <h2>Travel calendar</h2>
+        </div>
+        <div class="year-picker">
+          <button id="prev-year" aria-label="Previous year">‹</button>
+          <strong id="calendar-year">{{ current_year }}</strong>
+          <button id="next-year" aria-label="Next year">›</button>
+        </div>
+      </div>
+      <div class="calendar-summary" id="calendar-summary"></div>
+      <div class="year-grid" id="year-grid" aria-live="polite"></div>
+      <p class="calendar-note">Travel days are filled from each visited entry's start and end dates. Border-crossing days can show more than one flag.</p>
+    </section>
+
+    <section id="journal-view" class="view" hidden>
+      <div class="stats" aria-label="Travel totals">
+        <div><strong id="countries-total">0</strong><span>countries</span></div>
+        <div><strong id="days-total">0</strong><span>travel days</span></div>
+        <div><strong id="trips-total">0</strong><span>visited entries</span></div>
+        <div><strong id="wishlist-total">0</strong><span>wishlist</span></div>
+      </div>
+      <div class="journal-tools">
+        <div class="filters">
+          <button class="active" data-filter="all">All</button>
+          <button data-filter="visited">Visited</button>
+          <button data-filter="wishlist">Wishlist</button>
+        </div>
+        <input id="search" type="search" placeholder="Search places or memories…" aria-label="Search places">
+      </div>
+      <div id="cards" class="cards"></div>
+      <a class="export" href="{{ url_for('export_data') }}">Export my records ↗</a>
+    </section>
+  </main>
+
+  <dialog id="place-dialog">
+    <form id="place-form">
+      <div class="dialog-head"><div><p class="kicker">MAKE A LITTLE HISTORY</p><h2 id="dialog-title">Add a place</h2></div><button type="button" id="close-dialog" class="icon">✕</button></div>
+      <label>Country<select name="country" required><option value="">Choose a country…</option>{% for country in countries %}<option value="{{ country.code }}">{{ country.name }}</option>{% endfor %}</select></label>
+      <label>Town, region or sight <span>(optional)</span><input name="place" maxlength="120" placeholder="e.g. Mestia, Svaneti"></label>
+      <label>Status<select name="status"><option value="visited">Visited</option><option value="wishlist">Wishlist</option></select></label>
+      <div id="date-fields" class="date-row">
+        <label>From <input type="date" name="start_date"></label>
+        <label>To <input type="date" name="end_date"></label>
+      </div>
+      <label>Memory / note <span>(optional)</span><textarea name="notes" rows="4" maxlength="4000" placeholder="What do you want to remember?"></textarea></label>
+      <p id="form-error" class="error" role="alert"></p>
+      <div class="actions"><button type="button" id="delete-place" class="danger" hidden>Delete</button><button id="save-place" class="primary" type="submit">Save place</button></div>
+    </form>
+  </dialog>
+
+  <script id="countries-data" type="application/json">{{ countries|tojson }}</script>
+  <script src="{{ url_for('static', filename='places.js') }}" defer></script>
+</body>
+</html>
