@@ -61,8 +61,8 @@ def validate(payload):
         raise ValueError("Choose a valid country.")
     if len(place) > 120 or len(notes) > 4000:
         raise ValueError("One of the fields is too long.")
-    if status not in {"visited", "wishlist"}:
-        raise ValueError("Choose visited or wishlist.")
+    if status not in {"visited", "wishlist", "planned"}:
+        raise ValueError("Choose visited, planned or wishlist.")
 
     if status == "wishlist":
         start_date = end_date = ""
@@ -82,6 +82,8 @@ def validate(payload):
                 raise ValueError("Travel dates must be between 1900 and 2200.")
             start_date, end_date = start.isoformat(), end.isoformat()
 
+    if status == "planned" and not start_date:
+        raise ValueError("Choose a date or date range for your plan.")
     return {
         "country": country,
         "place": place,
@@ -141,7 +143,7 @@ def create_place():
             new_id = cursor.lastrowid
     except sqlite3.IntegrityError:
         return jsonify(error="That trip or place already exists."), 409
-    return jsonify(id=new_id), 201
+    return jsonify(id=new_id, place={**values, "id": new_id}), 201
 
 
 @app.put("/api/places/<int:record_id>")
@@ -162,7 +164,7 @@ def update_place(record_id):
                 abort(404)
     except sqlite3.IntegrityError:
         return jsonify(error="That trip or place already exists."), 409
-    return jsonify(id=record_id)
+    return jsonify(id=record_id, place=values)
 
 
 @app.delete("/api/places/<int:record_id>")
@@ -180,7 +182,7 @@ def calendar(year):
     day_map = {}
     with connect() as db:
         rows = [dict(r) for r in db.execute(
-            "SELECT * FROM places WHERE status='visited' AND start_date<>''"
+            "SELECT * FROM places WHERE status IN ('visited', 'planned') AND start_date<>''"
         )]
     for row in rows:
         start = max(row["start_date"], f"{year}-01-01")
@@ -190,7 +192,7 @@ def calendar(year):
                 continue
             key = day.isoformat()
             day_map.setdefault(key, []).append({
-                "id": row["id"], "country": row["country"], "place": row["place"]
+                "id": row["id"], "country": row["country"], "place": row["place"], "status": row["status"]
             })
     return jsonify(year=year, days=day_map)
 

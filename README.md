@@ -85,3 +85,9 @@ PLACES_PORT=8094 bash termux/install.sh
 Calendar dates are supported from 1900 through 2200. Overlapping entries count once per travel day. Duplicate edits return a clear conflict, preserving both records. Migration validates all source rows before writing and leaves the AYCF journal intact. A dry run validates source records, but does not compare them with existing target records.
 
 For the full regression suite (including installer/service simulations), install pytest and run `python -m pytest -q`.
+
+## Map and travel planner
+
+Places opens on the interactive world map. Visited countries are green, planned destinations blue and wishlist countries clay; visited takes visual priority when a country has several kinds of entries. Zoom controls let you explore smaller countries. The bundled Natural Earth map needs no external tile provider or API key. Small islands remain selectable through Add a place.
+
+The separate Planner opens on one month with large date buttons. Tap a day to choose a country, optionally extend the end date, and save its flag across the range. Flagged days show existing entries for editing and still allow another country to be added. Month/year selectors, previous/next controls and a Year overview support longer trips. Planned trips retain dates without increasing visited totals; change their status to Visited after travelling. Existing entries and dates are retained, and the Journal remains available for search, editing and export.
