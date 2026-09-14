@@ -34,7 +34,7 @@ For the local Android setup:
 bash termux/install.sh
 ```
 
-The installer creates a `places` command. Useful commands are:
+The installer uses the current checkout, creates `~/.local/bin/places`, saves runtime settings under `~/.config/places/env`, and registers Places in the Admin Hub without replacing other apps. It also creates a Termux:Boot startup script; Android boot startup requires Termux:Boot to be installed. The installer creates a `places` command. Useful commands are:
 
 ```bash
 places start
@@ -71,3 +71,17 @@ The old AYCF database is opened read-only and is never modified.
 ```bash
 python -m unittest discover -s tests -v
 ```
+
+## Custom port or data directory
+
+If another app already uses 8084, choose a free port before installing:
+
+```bash
+PLACES_PORT=8094 bash termux/install.sh
+```
+
+`PLACES_DATA_DIR` and `PLACES_DB_PATH` are also saved by the installer and reused by the service and migration. Registered port conflicts stop installation without replacing the registry. Updates follow this repository's `main` branch; the separate AYCF/Hub integration targets AYCF's `deploy/termux` branch.
+
+Calendar dates are supported from 1900 through 2200. Overlapping entries count once per travel day. Duplicate edits return a clear conflict, preserving both records. Migration validates all source rows before writing and leaves the AYCF journal intact. A dry run validates source records, but does not compare them with existing target records.
+
+For the full regression suite (including installer/service simulations), install pytest and run `python -m pytest -q`.
