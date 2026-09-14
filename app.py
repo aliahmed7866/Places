@@ -17,6 +17,9 @@ COUNTRIES = sorted(
     [{"code": c.alpha_2, "name": c.name} for c in pycountry.countries],
     key=lambda c: c["name"],
 )
+# AYCF also supports Kosovo, which has no ISO 3166 entry in pycountry.
+COUNTRIES.append({"code": "XK", "name": "Kosovo"})
+COUNTRIES.sort(key=lambda c: c["name"])
 COUNTRY_CODES = {c["code"] for c in COUNTRIES}
 
 
@@ -75,6 +78,9 @@ def validate(payload):
                 raise ValueError("Enter valid travel dates.") from exc
             if end < start:
                 raise ValueError("End date cannot be before start date.")
+            if not (1900 <= start.year <= end.year <= 2200):
+                raise ValueError("Travel dates must be between 1900 and 2200.")
+            start_date, end_date = start.isoformat(), end.isoformat()
 
     return {
         "country": country,
@@ -93,6 +99,8 @@ def iter_days(start_text, end_text):
     end = date.fromisoformat(end_text or start_text)
     while current <= end:
         yield current
+        if current == end:
+            break
         current += timedelta(days=1)
 
 
@@ -143,14 +151,17 @@ def update_place(record_id):
     except ValueError as exc:
         return jsonify(error=str(exc)), 400
     values["id"] = record_id
-    with connect() as db:
-        cursor = db.execute(
-            """UPDATE places SET country=:country,place=:place,status=:status,
-            start_date=:start_date,end_date=:end_date,notes=:notes WHERE id=:id""",
-            values,
-        )
-        if not cursor.rowcount:
-            abort(404)
+    try:
+        with connect() as db:
+            cursor = db.execute(
+                """UPDATE places SET country=:country,place=:place,status=:status,
+                start_date=:start_date,end_date=:end_date,notes=:notes WHERE id=:id""",
+                values,
+            )
+            if not cursor.rowcount:
+                abort(404)
+    except sqlite3.IntegrityError:
+        return jsonify(error="That trip or place already exists."), 409
     return jsonify(id=record_id)
 
 
@@ -172,7 +183,9 @@ def calendar(year):
             "SELECT * FROM places WHERE status='visited' AND start_date<>''"
         )]
     for row in rows:
-        for day in iter_days(row["start_date"], row["end_date"]):
+        start = max(row["start_date"], f"{year}-01-01")
+        end = min(row["end_date"] or row["start_date"], f"{year}-12-31")
+        for day in iter_days(start, end):
             if day.year != year:
                 continue
             key = day.isoformat()

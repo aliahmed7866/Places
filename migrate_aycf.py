@@ -12,9 +12,11 @@ import os
 import sqlite3
 from pathlib import Path
 
-DEFAULT_TARGET = Path(os.environ.get("PLACES_DB_PATH", Path.home() / ".local" / "share" / "places" / "places.sqlite3"))
+DEFAULT_TARGET = Path(os.environ.get("PLACES_DB_PATH", Path(os.environ.get("PLACES_DATA_DIR", Path.home() / ".local" / "share" / "places")) / "places.sqlite3"))
 SOURCE_CANDIDATES = [
     Path(os.environ["AYCF_JOURNAL_DB_PATH"]) if os.environ.get("AYCF_JOURNAL_DB_PATH") else None,
+    Path(os.environ["AYCF_DB_PATH"]).expanduser().with_name("travel-journal.sqlite3") if os.environ.get("AYCF_DB_PATH") else None,
+    Path(os.environ["AYCF_STATE_DIR"]).expanduser() / "travel-journal.sqlite3" if os.environ.get("AYCF_STATE_DIR") else None,
     Path.home() / ".local" / "share" / "aycf" / "travel-journal.sqlite3",
     Path.home() / ".local" / "share" / "aycf-trip-planner" / "travel-journal.sqlite3",
 ]
@@ -52,7 +54,7 @@ def ensure_target_schema(db: sqlite3.Connection) -> None:
 
 
 def migrate(source: Path, target: Path, dry_run: bool = False) -> tuple[int, int]:
-    source_db = sqlite3.connect(f"file:{source}?mode=ro", uri=True)
+    source_db = sqlite3.connect(source.resolve().as_uri() + "?mode=ro", uri=True)
     source_db.row_factory = sqlite3.Row
     try:
         columns = {row[1] for row in source_db.execute("PRAGMA table_info(places)")}
@@ -66,6 +68,13 @@ def migrate(source: Path, target: Path, dry_run: bool = False) -> tuple[int, int
     finally:
         source_db.close()
 
+    from app import validate
+    values = []
+    for row in rows:
+        try:
+            values.append(validate({**row, "start_date": row["visited_on"], "end_date": row["visited_on"]}))
+        except ValueError as exc:
+            raise SystemExit(f"Invalid AYCF record ({row['country']}, {row['place']}): {exc}") from exc
     if dry_run:
         return len(rows), 0
 
@@ -74,22 +83,10 @@ def migrate(source: Path, target: Path, dry_run: bool = False) -> tuple[int, int
     try:
         ensure_target_schema(target_db)
         inserted = 0
-        for row in rows:
-            visited_on = (row.get("visited_on") or "").strip()
-            start_date = visited_on if row.get("status") == "visited" else ""
-            end_date = start_date
+        for row in values:
             cursor = target_db.execute(
                 """INSERT OR IGNORE INTO places(country, place, status, start_date, end_date, notes)
-                   VALUES(?,?,?,?,?,?)""",
-                (
-                    (row.get("country") or "").strip().upper(),
-                    (row.get("place") or "").strip(),
-                    (row.get("status") or "").strip(),
-                    start_date,
-                    end_date,
-                    (row.get("notes") or "").strip(),
-                ),
-            )
+                   VALUES(:country,:place,:status,:start_date,:end_date,:notes)""", row)
             inserted += cursor.rowcount
         target_db.commit()
     finally:
