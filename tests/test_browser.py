@@ -53,22 +53,28 @@ def test_map_and_date_range_planner(tmp_path,monkeypatch,width):
             page.locator('#atlas-search').fill('Japan')
             page.locator('#atlas-results button').click()
             expect(page.locator('#country-panel h2')).to_contain_text('Japan')
-            before=page.locator('.world-svg').get_attribute('viewBox')
+            globe=page.locator('.world-svg')
+            page.wait_for_function("document.querySelector('.globe-labels .selected')?.textContent === 'Japan'")
+            label=page.locator('.globe-labels .selected')
+            assert label.evaluate('(el)=>getComputedStyle(el).fontSize') == '13px'
+            before=globe.get_attribute('data-zoom')
             page.locator('#zoom-in').click()
-            assert page.locator('.world-svg').get_attribute('viewBox') != before
+            expect(globe).not_to_have_attribute('data-zoom',before)
+            assert label.evaluate('(el)=>getComputedStyle(el).fontSize') == '13px'
+
             page.locator('#zoom-reset').click()
-            expect(page.locator('.world-svg')).to_have_attribute('viewBox','0 10 900 410')
+            expect(globe).to_have_attribute('data-zoom','1.000')
             surface=page.locator('#map-window')
             surface.focus()
             page.keyboard.press('ArrowRight')
-            assert page.locator('.world-svg').get_attribute('viewBox') != '0 10 900 410'
+            expect(globe).not_to_have_attribute('data-rotation','0,-20,0')
             rect=surface.bounding_box()
-            before=page.locator('.world-svg').get_attribute('viewBox')
+            before=globe.get_attribute('data-rotation')
             page.mouse.move(rect['x']+rect['width']*.5,rect['y']+rect['height']*.5)
             page.mouse.down()
             page.mouse.move(rect['x']+rect['width']*.65,rect['y']+rect['height']*.55,steps=8)
             page.mouse.up()
-            assert page.locator('.world-svg').get_attribute('viewBox') != before
+            expect(globe).not_to_have_attribute('data-rotation',before)
             page.locator('#atlas-region').select_option('Asia')
             expect(page.locator('#atlas-progress')).to_contain_text('Asia')
             page.locator('#country-panel input[type=url]').fill('https://www.instagram.com/stories/highlights/123456789/')

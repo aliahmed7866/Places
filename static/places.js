@@ -71,7 +71,7 @@
   }
   function paintMap() {
     const sets=Object.fromEntries(Object.keys(labels).map(status=>[status,new Set(records.filter(r=>r.status===status).map(r=>r.country))]));
-    document.querySelectorAll('.world-svg path').forEach(path=>{
+    document.querySelectorAll('.world-svg path[data-code]').forEach(path=>{
       const code=path.dataset.code;
       const status=['visited','planned','wishlist'].find(s=>sets[s].has(code));
       for(const s of Object.keys(labels))path.classList.toggle(s,s===status);
