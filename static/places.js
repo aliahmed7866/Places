@@ -84,6 +84,7 @@
     $('days-total').textContent=travelDays(visited);$('trips-total').textContent=visited.length;
     $('wishlist-total').textContent=records.filter(r=>r.status==='wishlist').length;
     paintMap();
+    window.dispatchEvent(new Event("places:changed"));
     const q=$('search').value.trim().toLowerCase();
     const shown=records.filter(r=>(filter==='all'||r.status===filter)&&`${catalog.get(r.country)||r.country} ${r.place} ${r.notes}`.toLowerCase().includes(q));
     const cards=$('cards');cards.replaceChildren();
@@ -167,18 +168,6 @@
     try{await req(`${api}/${editing}`,{method:'DELETE'});records=records.filter(r=>r.id!==editing);dialog.close();renderJournal();$('app-message').textContent='Deleted.';if(!$('calendar-view').hidden)await renderCalendar();}
     catch(err){$('form-error').textContent=err.message;}finally{$('delete-place').disabled=false;}
   };
-  function setZoom(value){zoom=Math.max(1,Math.min(4,value));const svg=document.querySelector('.world-svg');if(svg)svg.style.width=`${zoom*100}%`;}
-  $('zoom-in').onclick=()=>setZoom(zoom+.5);$('zoom-out').onclick=()=>setZoom(zoom-.5);
-  $('zoom-reset').onclick=()=>{setZoom(1);$('map-window').scrollTo(0,0);};
-  fetch('/static/places-world.svg').then(r=>{if(!r.ok)throw new Error();return r.text();}).then(svg=>{
-    // Only the trusted, bundled SVG is inserted as markup; entry text uses textContent.
-    $('world-map').innerHTML=svg;
-    document.querySelectorAll('.world-svg path').forEach(path=>{
-      const code=path.dataset.code;
-      const activate=()=>{if(catalog.has(code))showEditor(null,{country:code});};
-      path.onclick=activate;path.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();activate();}};
-      path.onmouseenter=path.onfocus=()=>{$('map-caption').textContent=catalog.get(code)||path.getAttribute('aria-label');};
-    });paintMap();
-  }).catch(()=>{$('map-caption').textContent='Map unavailable. Use Add a place to choose any country.';});
+  window.placesAtlas = {catalog, flag, fmt, node, req, showEditor, records:()=>records, paintMap};
   req(api).then(data=>{records=data.places;renderJournal();}).catch(err=>{$('app-message').textContent=err.message;});
 })();

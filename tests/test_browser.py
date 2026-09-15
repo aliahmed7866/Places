@@ -1,3 +1,4 @@
+import re
 import importlib
 import os
 from pathlib import Path
@@ -25,6 +26,8 @@ def test_map_and_date_range_planner(tmp_path,monkeypatch,width):
             expect(page.locator('#calendar-view')).to_be_hidden()
             georgia=page.locator('path[data-code="GE"]')
             georgia.focus();page.keyboard.press('Enter')
+            expect(page.locator('#country-panel h2')).to_contain_text('Georgia')
+            page.locator('#country-panel').get_by_role('button',name='＋ Add a place',exact=True).click()
             expect(page.locator('select[name=country]')).to_have_value('GE')
             page.locator('#close-dialog').click()
             page.get_by_role('button',name='Planner',exact=True).click()
@@ -44,8 +47,21 @@ def test_map_and_date_range_planner(tmp_path,monkeypatch,width):
             page.locator('#save-place').click()
             expect(page.locator('#place-dialog')).not_to_be_visible()
             page.get_by_role('button',name='Map',exact=True).click()
-            expect(georgia).to_have_class('visited')
+            expect(georgia).to_have_class(re.compile(r'\bvisited\b'))
             expect(page.locator('#countries-total')).to_have_text('1')
+            page.locator('#atlas-search').fill('Japan')
+            page.locator('#atlas-results button').click()
+            expect(page.locator('#country-panel h2')).to_contain_text('Japan')
+            before=page.locator('.world-svg').get_attribute('viewBox')
+            page.locator('#zoom-in').click()
+            assert page.locator('.world-svg').get_attribute('viewBox') != before
+            page.locator('#zoom-reset').click()
+            expect(page.locator('.world-svg')).to_have_attribute('viewBox','0 10 900 410')
+            page.locator('#atlas-region').select_option('Asia')
+            expect(page.locator('#atlas-progress')).to_contain_text('Asia')
+            page.locator('#country-panel input[type=url]').fill('https://www.instagram.com/stories/highlights/123456789/')
+            page.get_by_role('button',name='Save link',exact=True).click()
+            expect(page.get_by_role('link',name='Open Instagram ↗')).to_have_attribute('href','https://www.instagram.com/stories/highlights/123456789/')
             assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
             folder=os.environ.get('BROWSER_ARTIFACT_DIR')
             if folder:

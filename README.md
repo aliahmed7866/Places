@@ -91,3 +91,13 @@ For the full regression suite (including installer/service simulations), install
 Places opens on the interactive world map. Visited countries are green, planned destinations blue and wishlist countries clay; visited takes visual priority when a country has several kinds of entries. Zoom controls let you explore smaller countries. The bundled Natural Earth map needs no external tile provider or API key. Small islands remain selectable through Add a place.
 
 The separate Planner opens on one month with large date buttons. Tap a day to choose a country, optionally extend the end date, and save its flag across the range. Flagged days show existing entries for editing and still allow another country to be added. Month/year selectors, previous/next controls and a Year overview support longer trips. Planned trips retain dates without increasing visited totals; change their status to Visited after travelling. Existing entries and dates are retained, and the Journal remains available for search, editing and export.
+
+## Detailed atlas and country memories
+
+The map bundles Natural Earth 1:50m outlines for 237 countries and territories, including coastlines and smaller islands. Drag to pan, pinch or use the buttons to zoom, search any country, or choose a continent. Country labels appear as you zoom closer. Keyboard users can focus countries and press Enter; the map supports arrow keys and +/−. Ctrl+wheel zooms; ordinary wheel scrolling stays available outside the focused map. This is a country atlas, not a street-map or navigation service.
+
+Selecting a country opens its visits, date ranges and notes, plus buttons to add a visit or planned trip. Regional progress counts mapped countries and territories; it is not a count of sovereign states.
+
+Each country can have an Instagram Highlight/profile link and a saved cover photo. These are manually added memories: the app does not connect to Instagram accounts, scrape Highlights or synchronize Instagram images. Save an image you own to your device, select the country and choose **Add a saved cover photo**. The browser resizes the image before storing it in the existing external SQLite database. JPEG and PNG uploads are supported, up to 2 MB after resizing. Country photos and links are included in the version 2 JSON export. They are retained independently of itinerary entries.
+
+The finer map is bundled and has no new Termux dependencies. To regenerate it during development, install Shapely and run `python tools/build_atlas.py /path/to/ne_50m_admin_0_countries.geojson`; provenance is recorded in `static/places-map-source.txt`.
