@@ -1,3 +1,4 @@
+import base64
 import re
 import importlib
 import os
@@ -57,11 +58,26 @@ def test_map_and_date_range_planner(tmp_path,monkeypatch,width):
             assert page.locator('.world-svg').get_attribute('viewBox') != before
             page.locator('#zoom-reset').click()
             expect(page.locator('.world-svg')).to_have_attribute('viewBox','0 10 900 410')
+            surface=page.locator('#map-window')
+            surface.focus()
+            page.keyboard.press('ArrowRight')
+            assert page.locator('.world-svg').get_attribute('viewBox') != '0 10 900 410'
+            rect=surface.bounding_box()
+            before=page.locator('.world-svg').get_attribute('viewBox')
+            page.mouse.move(rect['x']+rect['width']*.5,rect['y']+rect['height']*.5)
+            page.mouse.down()
+            page.mouse.move(rect['x']+rect['width']*.65,rect['y']+rect['height']*.55,steps=8)
+            page.mouse.up()
+            assert page.locator('.world-svg').get_attribute('viewBox') != before
             page.locator('#atlas-region').select_option('Asia')
             expect(page.locator('#atlas-progress')).to_contain_text('Asia')
             page.locator('#country-panel input[type=url]').fill('https://www.instagram.com/stories/highlights/123456789/')
             page.get_by_role('button',name='Save link',exact=True).click()
             expect(page.get_by_role('link',name='Open Instagram ↗')).to_have_attribute('href','https://www.instagram.com/stories/highlights/123456789/')
+            image_data=page.evaluate("""() => {const c=document.createElement('canvas');c.width=64;c.height=40;const ctx=c.getContext('2d');ctx.fillStyle='#2f775a';ctx.fillRect(0,0,64,40);return c.toDataURL('image/png').split(',')[1];}""")
+            page.locator('#country-panel input[type=file]').set_input_files({'name':'country.png','mimeType':'image/png','buffer':base64.b64decode(image_data)})
+            expect(page.locator('#country-panel img')).to_be_visible()
+            page.wait_for_function("document.querySelector('#country-panel img').naturalWidth > 0")
             assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
             folder=os.environ.get('BROWSER_ARTIFACT_DIR')
             if folder:
