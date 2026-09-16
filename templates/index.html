@@ -41,8 +41,8 @@
       <p id="atlas-progress" class="calendar-note" role="status"></p>
       <div class="atlas-layout">
         <div class="atlas-stage">
-          <div class="map-window" id="map-window" tabindex="0" aria-label="Interactive map. Use arrow keys to pan, plus and minus to zoom."><div id="world-map" aria-label="World map"></div></div>
-          <div class="map-footer"><span id="map-caption">Drag to explore · pinch to zoom · tap a country</span><div><button class="icon" id="zoom-out" aria-label="Zoom out">−</button><button class="icon" id="zoom-reset">World</button><button class="icon" id="zoom-in" aria-label="Zoom in">＋</button></div></div>
+          <div class="map-window" id="map-window" tabindex="0" aria-label="Interactive map. Use arrow keys to rotate, plus and minus to zoom."><div id="world-map" aria-label="World map"></div></div>
+          <div class="map-footer"><span id="map-caption">Drag to rotate Earth · pinch to zoom · tap a country</span><div><button class="icon" id="zoom-out" aria-label="Zoom out">−</button><button class="icon" id="zoom-reset">World</button><button class="icon" id="zoom-in" aria-label="Zoom in">＋</button></div></div>
         </div>
         <aside id="country-panel" class="country-panel" aria-label="Country details"><p class="kicker">YOUR WORLD</p><h2>Every place has a story.</h2><p>Select a country to see your visits, plan a trip and add a favourite photo.</p></aside>
       </div>
@@ -96,6 +96,7 @@
 
   <script id="countries-data" type="application/json">{{ countries|tojson }}</script>
   <script src="{{ url_for('static', filename='places.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='vendor/d3.min.js') }}" defer></script>
   <script src="{{ url_for('static', filename='atlas.js') }}" defer></script>
 </body>
 </html>

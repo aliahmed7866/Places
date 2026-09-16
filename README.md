@@ -101,3 +101,7 @@ Selecting a country opens its visits, date ranges and notes, plus buttons to add
 Each country can have an Instagram Highlight/profile link and a saved cover photo. These are manually added memories: the app does not connect to Instagram accounts, scrape Highlights or synchronize Instagram images. Save an image you own to your device, select the country and choose **Add a saved cover photo**. The browser resizes the image before storing it in the existing external SQLite database. JPEG and PNG uploads are supported, up to 2 MB after resizing. Country photos and links are included in the version 2 JSON export. They are retained independently of itinerary entries.
 
 The finer map is bundled and has no new Termux dependencies. To regenerate it during development, install Shapely and run `python tools/build_atlas.py /path/to/ne_50m_admin_0_countries.geojson`; provenance is recorded in `static/places-map-source.txt`.
+
+## Earth globe
+
+The atlas now uses a rotatable orthographic globe with ocean lighting and a shaded edge. Drag or use arrow keys to rotate, pinch or use +/− to zoom. Country search rotates the selected country to the front. Labels are HTML overlays at a fixed 13px size, with measured spacing to avoid collisions; they do not stretch with the globe. Countries beyond the horizon are clipped. D3 7.9.0 and the map geometry are bundled locally, so this requires no tile service, API key or new Termux package.

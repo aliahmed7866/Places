@@ -7,3 +7,5 @@ Projection: equirectangular. Countries and territories are counted together.
 Focus/label positions use the largest land component to avoid overseas-area jumps.
 Boundaries follow the source's de facto treatment and are not a sovereignty claim.
 Small territories absent from the geometry remain available in country search.
+
+Globe: the same simplified country geometry, clockwise exterior rings for D3 orthographic spherical clipping. D3 7.9.0 is bundled in static/vendor with its ISC license. Labels are independent fixed-size HTML overlays.

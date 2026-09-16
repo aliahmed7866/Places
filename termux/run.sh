@@ -74,11 +74,12 @@ status() {
 }
 
 update() {
-  git -C "$APP_DIR" fetch origin
+  [ -z "$(git -C "$APP_DIR" status --porcelain --untracked-files=no)" ] || { echo "Local changes found; update stopped." >&2; return 1; }
+  GIT_TERMINAL_PROMPT=0 git -C "$APP_DIR" fetch origin
   [ "$(git -C "$APP_DIR" branch --show-current)" = main ] || { echo "Switch to the Places main branch before updating." >&2; return 1; }
   git -C "$APP_DIR" merge --ff-only origin/main
+  "$APP_DIR/.venv/bin/python" -m pip install -r "$APP_DIR/requirements.txt" >/dev/null
   stop
-  "$APP_DIR/.venv/bin/pip" install -r "$APP_DIR/requirements.txt" >/dev/null
   start
 }
 
