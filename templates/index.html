@@ -35,15 +35,15 @@
       <div class="map-legend"><span class="visited-key">● Visited</span><span class="planned-key">● Planned</span><span class="wishlist-key">● Wishlist</span></div>
       <div class="atlas-toolbar">
         <label>Find a country<input id="atlas-search" type="search" placeholder="Search countries…" autocomplete="off"></label>
-        <label>Explore<select id="atlas-region"><option>World</option><option>Europe</option><option>Africa</option><option>Asia</option><option>North America</option><option>South America</option><option>Oceania</option></select></label>
+        <label>Explore<select id="atlas-region"><option>World</option><option>Europe</option><option>Africa</option><option>Asia</option><option>North America</option><option>South America</option><option>Oceania</option><option>Antarctica</option></select></label>
       </div>
       <div id="atlas-results" class="atlas-results"></div>
       <p id="atlas-progress" class="calendar-note" role="status"></p>
       <div class="map-options"><label>Country label size<select id="label-size"><option value="15">Standard</option><option value="18">Large</option><option value="21">Extra large</option></select></label><button id="map-expand" class="icon" aria-pressed="false">Expand map</button></div>
       <div class="atlas-layout" id="atlas-layout">
         <div class="atlas-stage">
-          <div class="map-window" id="map-window" tabindex="0" aria-label="Interactive map. Use arrow keys to rotate, plus and minus to zoom."><div id="world-map" aria-label="World map"></div></div>
-          <div class="map-footer"><span id="map-caption">Drag to rotate Earth · pinch to zoom · tap a country</span><div><button class="icon" id="zoom-out" aria-label="Zoom out">−</button><button class="icon" id="zoom-reset">World</button><button class="icon" id="zoom-in" aria-label="Zoom in">＋</button></div></div>
+          <div class="map-window" id="map-window" tabindex="0" aria-label="Interactive map. Use arrow keys to rotate, plus and minus to zoom."><div id="world-map" aria-label="World map"></div><div class="map-hud"><span class="orbital-mark" aria-hidden="true">◎</span><span id="map-detail">CONTINENTS</span><span id="map-zoom" aria-label="Zoom level">1.0×</span></div></div>
+          <p id="map-hint" class="map-hint">Select a continent or zoom in to reveal countries</p><div class="map-footer"><span id="map-caption">Drag to rotate Earth · pinch to zoom · tap a country</span><div><button class="icon" id="zoom-out" aria-label="Zoom out">−</button><button class="icon" id="zoom-reset">World</button><button class="icon" id="zoom-in" aria-label="Zoom in">＋</button></div></div>
         </div>
         <aside id="country-panel" class="country-panel" aria-label="Country details"><p class="kicker">YOUR WORLD</p><h2>Every place has a story.</h2><p>Select a country to see your visits, plan a trip and add a favourite photo.</p></aside>
       </div>

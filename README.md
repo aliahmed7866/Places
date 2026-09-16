@@ -111,3 +111,9 @@ The atlas now uses a rotatable orthographic globe with ocean lighting and a shad
 Country labels have Standard (15px), Large (18px), and Extra large (21px) settings. They stay upright at a constant screen size, wrap long names, and use opaque high-contrast backgrounds. Each label connects to a dot inside its country; labels can be tapped to open that country's memories. The selected country gets first priority, followed by saved destinations and larger countries, so small territories do not crowd out major country names. Overlapping labels are omitted, while **Countries in view** lists every visible country anchor for easy selection of crowded countries and islands. **Expand map** gives the globe more room.
 
 Country names are shared across the map, search, planner and forms; the two Congos and the two Koreas have distinct labels. Search also accepts two-letter country codes and the bundled atlas names. All 237 bundled anchors are checked against their corresponding spherical country geometry with `node tests/test_globe_geometry.js`. This remains a country-level globe; no terrain elevation, street maps or live satellite imagery is included.
+
+## Progressive orbital view
+
+At world scale, the globe shows continent labels instead of a wall of country names. Tap a continent to explore it, or zoom above 1.45× to reveal the existing readable country labels. Zooming back out restores continents, even with a country selected. Country search still takes you straight to the destination. The Explore selector includes Antarctica and provides access to continents on the far side of Earth.
+
+The map has a dark orbital theme with cyan coastlines, a soft atmospheric edge, high-contrast labels and a small zoom/detail display. Visited, planned and wishlist colours remain distinct. Text size controls apply to country labels. The country directory, planner and memories remain available.
