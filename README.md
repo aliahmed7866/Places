@@ -104,4 +104,10 @@ The finer map is bundled and has no new Termux dependencies. To regenerate it du
 
 ## Earth globe
 
-The atlas now uses a rotatable orthographic globe with ocean lighting and a shaded edge. Drag or use arrow keys to rotate, pinch or use +/− to zoom. Country search rotates the selected country to the front. Labels are HTML overlays at a fixed 13px size, with measured spacing to avoid collisions; they do not stretch with the globe. Countries beyond the horizon are clipped. D3 7.9.0 and the map geometry are bundled locally, so this requires no tile service, API key or new Termux package.
+The atlas now uses a rotatable orthographic globe with ocean lighting and a shaded edge. Drag or use arrow keys to rotate, pinch or use +/− to zoom. Country search rotates the selected country to the front. Labels are HTML overlays with adjustable screen-sized text and measured spacing to avoid collisions; they do not stretch with the globe. Countries beyond the horizon are clipped. D3 7.9.0 and the map geometry are bundled locally, so this requires no tile service, API key or new Termux package.
+
+## Clear country labels and expanded exploration
+
+Country labels have Standard (15px), Large (18px), and Extra large (21px) settings. They stay upright at a constant screen size, wrap long names, and use opaque high-contrast backgrounds. Each label connects to a dot inside its country; labels can be tapped to open that country's memories. The selected country gets first priority, followed by saved destinations. Overlapping labels are omitted, while **Countries in view** lists every visible country anchor for easy selection of crowded countries and islands. **Expand map** gives the globe more room.
+
+Country names are shared across the map, search, planner and forms; the two Congos and the two Koreas have distinct labels. Search also accepts two-letter country codes and the bundled atlas names. All 237 bundled anchors are checked against their corresponding spherical country geometry with `node tests/test_globe_geometry.js`. This remains a country-level globe; no terrain elevation, street maps or live satellite imagery is included.

@@ -56,11 +56,36 @@ def test_map_and_date_range_planner(tmp_path,monkeypatch,width):
             globe=page.locator('.world-svg')
             page.wait_for_function("document.querySelector('.globe-labels .selected')?.textContent === 'Japan'")
             label=page.locator('.globe-labels .selected')
-            assert label.evaluate('(el)=>getComputedStyle(el).fontSize') == '13px'
+            assert label.evaluate('(el)=>getComputedStyle(el).fontSize') == '15px'
             before=globe.get_attribute('data-zoom')
             page.locator('#zoom-in').click()
             expect(globe).not_to_have_attribute('data-zoom',before)
-            assert label.evaluate('(el)=>getComputedStyle(el).fontSize') == '13px'
+            assert label.evaluate('(el)=>getComputedStyle(el).fontSize') == '15px'
+
+            # Crowded microstates, islands, long names and dateline countries must
+            # remain identifiable at both mobile and desktop widths.
+            for code, name in [('MC','Monaco'),('SG','Singapore'),('FJ','Fiji'),('CD','DR Congo'),('KR','South Korea')]:
+                page.locator('#atlas-search').fill(code)
+                page.locator('#atlas-results button').first.click()
+                chosen=page.locator(f'.globe-labels button[data-code="{code}"]')
+                expect(chosen).to_be_visible()
+                expect(chosen).to_have_text(name)
+                expect(page.locator('#country-panel h2')).to_contain_text(name)
+            page.locator('#label-size').select_option('21')
+            page.wait_for_function("getComputedStyle(document.querySelector('.globe-labels .selected')).fontSize === '21px'")
+            page.locator('#map-expand').click()
+            expect(page.locator('#map-expand')).to_have_attribute('aria-pressed','true')
+            page.wait_for_timeout(100)
+            boxes=page.locator('.globe-labels button').evaluate_all('(els)=>els.map(el=>{const r=el.getBoundingClientRect();return {x:r.x,y:r.y,right:r.right,bottom:r.bottom}})')
+            for i,a in enumerate(boxes):
+                for b in boxes[i+1:]:
+                    assert not (a['x']<b['right'] and a['right']>b['x'] and a['y']<b['bottom'] and a['bottom']>b['y'])
+            page.locator('#visible-count').click()
+            expect(page.locator('#visible-countries')).to_be_visible()
+            page.locator('#visible-countries').get_by_role('button',name='South Korea',exact=False).click()
+            expect(page.locator('#country-panel h2')).to_contain_text('South Korea')
+            page.locator('#map-expand').click()
+            page.locator('#label-size').select_option('15')
 
             page.locator('#zoom-reset').click()
             expect(globe).to_have_attribute('data-zoom','1.000')

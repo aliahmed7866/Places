@@ -39,13 +39,15 @@
       </div>
       <div id="atlas-results" class="atlas-results"></div>
       <p id="atlas-progress" class="calendar-note" role="status"></p>
-      <div class="atlas-layout">
+      <div class="map-options"><label>Country label size<select id="label-size"><option value="15">Standard</option><option value="18">Large</option><option value="21">Extra large</option></select></label><button id="map-expand" class="icon" aria-pressed="false">Expand map</button></div>
+      <div class="atlas-layout" id="atlas-layout">
         <div class="atlas-stage">
           <div class="map-window" id="map-window" tabindex="0" aria-label="Interactive map. Use arrow keys to rotate, plus and minus to zoom."><div id="world-map" aria-label="World map"></div></div>
           <div class="map-footer"><span id="map-caption">Drag to rotate Earth · pinch to zoom · tap a country</span><div><button class="icon" id="zoom-out" aria-label="Zoom out">−</button><button class="icon" id="zoom-reset">World</button><button class="icon" id="zoom-in" aria-label="Zoom in">＋</button></div></div>
         </div>
         <aside id="country-panel" class="country-panel" aria-label="Country details"><p class="kicker">YOUR WORLD</p><h2>Every place has a story.</h2><p>Select a country to see your visits, plan a trip and add a favourite photo.</p></aside>
       </div>
+      <details class="visible-directory"><summary id="visible-count">Countries in view</summary><p class="calendar-note">Every country anchor in the current view, including names hidden to avoid overlap. Select a name to centre it.</p><div id="visible-countries"></div></details>
       <p class="calendar-note">Map: Natural Earth, with detailed coastlines and islands. Search includes countries and territories too small to select on the map. Boundaries reflect the source's de facto treatment.</p>
     </section>
 
