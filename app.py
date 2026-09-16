@@ -19,8 +19,16 @@ DB_PATH = Path(os.environ.get("PLACES_DB_PATH", DATA_DIR / "places.sqlite3"))
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 4 * 1024 * 1024
 
+COUNTRY_DISPLAY_NAMES = {
+    "BO": "Bolivia", "BN": "Brunei", "CD": "DR Congo", "CG": "Republic of the Congo",
+    "FK": "Falkland Islands", "IR": "Iran", "KP": "North Korea", "KR": "South Korea",
+    "LA": "Laos", "MD": "Moldova", "PS": "Palestine", "RU": "Russia",
+    "SY": "Syria", "TW": "Taiwan", "TZ": "Tanzania", "VE": "Venezuela",
+    "VN": "Vietnam", "VG": "British Virgin Islands", "VI": "US Virgin Islands",
+}
+
 COUNTRIES = sorted(
-    [{"code": c.alpha_2, "name": c.name} for c in pycountry.countries],
+    [{"code": c.alpha_2, "name": COUNTRY_DISPLAY_NAMES.get(c.alpha_2, c.name)} for c in pycountry.countries],
     key=lambda c: c["name"],
 )
 # AYCF also supports Kosovo, which has no ISO 3166 entry in pycountry.

@@ -20,7 +20,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: node --check static/places.js && node --check static/atlas.js
+      - run: node --check static/places.js && node --check static/atlas.js && node tests/test_globe_geometry.js
   browser:
     runs-on: ubuntu-latest
     steps:
