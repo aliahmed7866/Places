@@ -102,6 +102,8 @@ def test_map_and_date_range_planner(tmp_path,monkeypatch,width):
             expect(globe).not_to_have_attribute('data-rotation',before)
             page.locator('#atlas-region').select_option('Asia')
             expect(page.locator('#atlas-progress')).to_contain_text('Asia')
+            expect(page.locator('.globe-labels button[data-code=CN]')).to_be_visible()
+            expect(page.locator('.globe-labels button[data-code=RU]')).to_be_visible()
             page.locator('#country-panel input[type=url]').fill('https://www.instagram.com/stories/highlights/123456789/')
             page.get_by_role('button',name='Save link',exact=True).click()
             expect(page.get_by_role('link',name='Open Instagram ↗')).to_have_attribute('href','https://www.instagram.com/stories/highlights/123456789/')

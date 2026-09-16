@@ -17,3 +17,5 @@
 #globe-ocean{filter:drop-shadow(0 0 9px #79c7ef99)}
 .map-options{display:flex;align-items:end;gap:16px;justify-content:space-between;margin:12px 0}.map-options label{margin:0}.map-options select{width:auto;display:block}.atlas-layout.expanded{grid-template-columns:1fr}.atlas-layout.expanded .map-window{height:78vh;max-height:1000px}
 .visible-directory{margin-top:18px;border:1px solid var(--line);border-radius:12px;padding:14px}.visible-directory summary{cursor:pointer;font-weight:700}.visible-directory .calendar-note{margin:12px 0}#visible-countries{display:flex;flex-wrap:wrap;gap:8px;max-height:240px;overflow:auto}#visible-countries button{padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:#f2f6ed;color:var(--ink);text-align:left}
+
+.country-panel button:not(.primary){border:1px solid #bdcdbf;border-radius:10px;background:#f4f7ef;color:var(--ink);padding:10px 14px;min-height:44px}.country-panel button:not(.primary):hover{background:#e4eddf}

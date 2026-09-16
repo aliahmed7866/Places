@@ -3,7 +3,7 @@
   const {catalog,flag,fmt,node,req,showEditor,records,paintMap}=window.placesAtlas;
   const $=id=>document.getElementById(id), panel=$('country-panel');
   const regions={World:[0,20,1],Europe:[18,52,2.4],Africa:[20,3,1.6],Asia:[90,35,1.5],'North America':[-105,40,1.5],'South America':[-60,-20,1.7],Oceania:[150,-20,1.7]};
-  let svg,metadata={},selected=null,requestId=0,dragged=false,features=[],rotation=[0,-20,0],magnification=1,frame=0;
+  let svg,metadata={},countryAreas={},selected=null,requestId=0,dragged=false,features=[],rotation=[0,-20,0],magnification=1,frame=0;
   const pointers=new Map();let gesture;
   const projection=d3.geoOrthographic().clipAngle(90).precision(.4), path=d3.geoPath(projection);
   const surface=$('map-window'), overlay=node('div','','globe-labels');overlay.setAttribute('aria-label','Country labels');
@@ -31,7 +31,7 @@
     const leaders=svg.querySelector('#label-leaders');leaders.replaceChildren();
     const saved=new Set(records().map(r=>r.country));
     const candidates=Object.entries(metadata).filter(([code])=>catalog.has(code)).sort(([a],[b])=>
-      Number(b===selected)-Number(a===selected)||Number(saved.has(b))-Number(saved.has(a))||catalog.get(a).localeCompare(catalog.get(b)));
+      Number(b===selected)-Number(a===selected)||Number(saved.has(b))-Number(saved.has(a))||(countryAreas[b]||0)-(countryAreas[a]||0)||catalog.get(a).localeCompare(catalog.get(b)));
     for(const [code,c]of candidates){
       const point=anchor(c);if(d3.geoDistance(point,center)>Math.PI/2-.04)continue;
       const [x,y]=projection(point);if(x<0||x>w||y<0||y>h)continue;
@@ -63,7 +63,7 @@
   function focusCountry(code){const c=metadata[code];if(!c)return;rotation=[180-c.label[0]/2.5,c.label[1]/2.5-90,0];magnification=Math.max(1.5,Math.min(10,500/Math.max(20,c.bounds[2],c.bounds[3])));draw();}
   function button(text,handler,cls=''){const b=node('button',text,cls);b.type='button';b.onclick=handler;return b;}
   async function select(code,focus=true){
-    selected=code;const token=++requestId;if(focus)focusCountry(code);draw();
+    selected=code;$('map-caption').textContent=catalog.get(code)||code;const token=++requestId;if(focus)focusCountry(code);draw();
     svg?.querySelectorAll('path[data-code]').forEach(p=>p.classList.toggle('selected',p.dataset.code===code));
     panel.replaceChildren(node('p',metadata[code]?.continent||'EXPLORE','kicker'),node('h2',`${flag(code)} ${catalog.get(code)||code}`));
     const rows=records().filter(r=>r.country===code);
@@ -94,11 +94,11 @@
   $('zoom-in').onclick=()=>zoom(.65);$('zoom-out').onclick=()=>zoom(1.5);$('zoom-reset').onclick=()=>{rotation=[0,-20,0];magnification=1;$('atlas-region').value='World';draw();progress();};
   window.addEventListener('places:changed',()=>{paintMap();progress();if(selected)select(selected,false);});
   Promise.all([req('/static/globe-countries.json'),req('/static/atlas-countries.json')]).then(([world,data])=>{
-    metadata=data;features=world.features;
+    metadata=data;features=world.features;countryAreas=Object.fromEntries(features.map(f=>[f.properties.code,d3.geoArea(f)]));
     $('world-map').innerHTML='<svg xmlns="http://www.w3.org/2000/svg" class="world-svg" role="group" aria-label="Interactive Earth globe"><defs><radialGradient id="ocean-light" cx="32%" cy="26%" r="80%"><stop stop-color="#74b4cb"/><stop offset=".65" stop-color="#326986"/><stop offset="1" stop-color="#173e59"/></radialGradient><radialGradient id="earth-shadow" cx="32%" cy="25%" r="80%"><stop offset=".5" stop-color="#04192c" stop-opacity="0"/><stop offset="1" stop-color="#04192c" stop-opacity=".55"/></radialGradient></defs><circle id="globe-ocean" fill="url(#ocean-light)"/><path id="globe-grid" fill="none" stroke="#ffffff" stroke-opacity=".15"/><g id="globe-land"></g><circle id="globe-shade" fill="url(#earth-shadow)" pointer-events="none"/><g id="label-leaders" pointer-events="none"></g></svg>';
     svg=$('world-map').querySelector('svg');$('world-map').append(overlay);
     for(const feature of features){const code=feature.properties.code,p=document.createElementNS('http://www.w3.org/2000/svg','path');p.dataset.code=code;p.setAttribute('role','button');p.setAttribute('aria-label',catalog.get(code)||code);const title=svgNode('title');title.textContent=catalog.get(code)||code;p.append(title);svg.querySelector('#globe-land').append(p);
-      const activate=()=>{if(catalog.has(code))select(code);};p.onclick=()=>{if(!dragged)activate();};p.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();activate();}};p.onmouseenter=p.onfocus=()=>{$('map-caption').textContent=catalog.get(code)||code;};
+      const activate=()=>{if(catalog.has(code))select(code);};p.onclick=()=>{if(!dragged)activate();};p.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();activate();}};p.onmouseenter=p.onfocus=()=>{$('map-caption').textContent=catalog.get(code)||code;};p.onmouseleave=p.onblur=()=>{$('map-caption').textContent=catalog.get(selected)||'Drag to rotate Earth · pinch to zoom · tap a country';};
     }draw();paintMap();progress();new ResizeObserver(draw).observe(surface);
     function snapshot(){const p=[...pointers.values()];gesture={rotation:[...rotation],zoom:magnification,center:[p.reduce((s,v)=>s+v[0],0)/p.length,p.reduce((s,v)=>s+v[1],0)/p.length],distance:p.length>1?Math.hypot(p[0][0]-p[1][0],p[0][1]-p[1][1]):0};}
     surface.onpointerdown=e=>{if(e.button!==0||e.target.closest('.globe-labels'))return;if(!pointers.size)dragged=false;pointers.set(e.pointerId,[e.clientX,e.clientY]);snapshot();};
