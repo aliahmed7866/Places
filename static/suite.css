@@ -1,0 +1,40 @@
+/* Shared interaction refinements; each app keeps its own palette and layout. */
+html { -webkit-text-size-adjust: 100%; scroll-padding-block: 90px; }
+body { -webkit-font-smoothing: antialiased; }
+:where(button, a, input, select, textarea, summary):focus-visible {
+  outline: 3px solid var(--focus-ring, #9bded6); outline-offset: 3px;
+}
+:where(input, select, textarea) { scroll-margin-block: 100px; }
+:where(button, .button, .primary, .secondary) { touch-action: manipulation; }
+:where(button, input, select, textarea):disabled { cursor: not-allowed; }
+:where(h1, h2, h3) { text-wrap: balance; }
+:where(p, dd) { overflow-wrap: anywhere; }
+:where(table, .metric-value, .metrics strong) { font-variant-numeric: tabular-nums; }
+@media (max-width: 700px) {
+  input:not([type=checkbox]):not([type=radio]), select, textarea { font-size: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}
+
+:root { --focus-ring: #247b70; }
+.view-tabs { padding: 6px; border: 1px solid #bdcec0; border-radius: 16px; background: #edf2e8; }
+.view-tabs button { min-height: 46px; }
+.stats > div { padding: 16px; border: 1px solid #c6d4c5; border-radius: 14px; background: #f5f8ef; }
+.atlas-toolbar, .map-options { gap: 14px; }
+.map-options { flex-wrap: wrap; }
+.map-options label { font-size: .85rem; }
+.map-options select { min-height: 44px; margin-top: 6px; }
+.map-footer .icon { min-width: 46px; min-height: 46px; }
+.world-svg path[data-code] { stroke: #b9e5e4; stroke-width: 1.1; stroke-opacity: 1; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
+.world-svg[data-detail=continents] path[data-code] { stroke-width: .8; stroke-opacity: .85; }
+#atlas-layout[data-borders=strong] .world-svg path[data-code] { stroke: #e4fffb; stroke-width: 1.7; stroke-opacity: 1; }
+#atlas-layout .world-svg path[data-code].selected { stroke: #ffe79a; stroke-width: 2.8; stroke-opacity: 1; }
+#atlas-layout .world-svg path[data-code]:focus-visible { stroke: #fff; stroke-width: 3; outline: none; }
+@media(max-width:600px) {
+ .stats { gap: 8px; }
+ .stats > div { padding: 12px; }
+ .map-footer { flex-wrap: wrap; gap: 12px; }
+ .map-options > label { flex: 1 1 130px; }
+ .map-options select { width: 100%; }
+}
