@@ -38,3 +38,24 @@ body { -webkit-font-smoothing: antialiased; }
  .map-options > label { flex: 1 1 130px; }
  .map-options select { width: 100%; }
 }
+
+/* Alternate atlas projection uses the same country paths and travel records. */
+.map-view-switch{display:inline-flex;gap:4px;padding:5px;background:#e8efe7;border:1px solid #bdcec0;border-radius:14px;margin-top:12px}
+.map-view-switch button{border:0;border-radius:10px;background:transparent;color:#365547;padding:10px 20px;min-height:44px;font:600 14px system-ui}
+.map-view-switch button[aria-pressed=true]{background:#315b44;color:#fff;box-shadow:0 2px 5px #173e2226}
+.atlas-layout[data-view=flat] .atlas-stage{background:#eaf0ed;border-color:#b4c9c1}
+.atlas-layout[data-view=flat] .map-window{background:#eaf0ed}
+.atlas-layout[data-view=flat] #globe-ocean,.atlas-layout[data-view=flat] #globe-shade{display:none}
+.atlas-layout[data-view=flat] #globe-grid{stroke:#6b9387;stroke-opacity:.2}
+.atlas-layout[data-view=flat] .map-hud,.atlas-layout[data-view=flat] #map-zoom,.atlas-layout[data-view=flat] .map-hint,.atlas-layout[data-view=flat] .map-footer{color:#31554e}
+.atlas-layout[data-view=flat] .world-svg path[data-code]{fill:#c9d6ce;stroke:#657d74;stroke-width:.8}
+.atlas-layout[data-view=flat] .world-svg path[data-code].visited{fill:#4a9471}
+.atlas-layout[data-view=flat] .world-svg path[data-code].planned{fill:#769fe5}
+.atlas-layout[data-view=flat] .world-svg path[data-code].wishlist{fill:#dfa46c}
+#atlas-layout[data-view=flat][data-borders=strong] .world-svg path[data-code]{stroke:#244d42;stroke-width:1.7}
+#atlas-layout[data-view=flat] .world-svg path[data-code].selected{stroke:#704817;stroke-width:2.8}
+#atlas-layout[data-view=flat] .world-svg path[data-code]:hover,#atlas-layout[data-view=flat] .world-svg path[data-code]:focus-visible{stroke:#173e32;fill:#a8c9b5;stroke-width:2}
+.atlas-layout[data-view=flat] .globe-labels button{background:#f9fcf8;color:#254e43;border-color:#759e8e;box-shadow:0 2px 6px #244b3026}
+.atlas-layout[data-view=flat] .globe-labels button.selected{background:#ffe6a1;color:#17282a}
+.atlas-layout[data-view=flat] #label-leaders line{stroke:#345f50}
+.atlas-layout[data-view=flat] #label-leaders circle{fill:#315b44;stroke:#fff}
