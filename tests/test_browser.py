@@ -156,3 +156,98 @@ def test_map_and_date_range_planner(tmp_path,monkeypatch,width):
             browser.close()
     finally:
         server.shutdown();worker.join(timeout=5)
+
+
+@pytest.mark.parametrize('width', [390, 1280])
+def test_flat_map_shares_records_and_remembers_view(tmp_path, monkeypatch, width):
+    monkeypatch.setenv('PLACES_DB_PATH', str(tmp_path/'flat.sqlite3'))
+    import app
+    app = importlib.reload(app)
+    client = app.app.test_client()
+    for code, status in [('GE', 'visited'), ('JP', 'planned'), ('BR', 'wishlist')]:
+        assert client.post('/api/places', json=dict(country=code, status=status, place='', notes='',
+                           start_date='2026-09-25', end_date='2026-09-27')).status_code == 201
+    from werkzeug.serving import make_server
+    server = make_server('127.0.0.1', 0, app.app, threaded=True)
+    worker = threading.Thread(target=server.serve_forever, daemon=True)
+    worker.start()
+    try:
+        with playwright.sync_playwright() as pw:
+            browser = pw.chromium.launch()
+            page = browser.new_page(viewport={'width': width, 'height': 900})
+            errors = []
+            page.on('pageerror', lambda error: errors.append(str(error)))
+            url = f'http://127.0.0.1:{server.server_port}'
+            page.goto(url)
+            expect = playwright.expect
+            svg = page.locator('.world-svg')
+            expect(svg).to_have_attribute('data-view', 'globe')
+            page.get_by_role('button', name='Flat map', exact=True).click()
+            expect(svg).to_have_attribute('data-view', 'flat')
+            expect(page.get_by_role('button', name='Flat map', exact=True)).to_have_attribute('aria-pressed', 'true')
+            expect(page.locator('#globe-ocean')).to_be_hidden()
+            for code, status in [('GE', 'visited'), ('JP', 'planned'), ('BR', 'wishlist')]:
+                expect(page.locator(f'path[data-code="{code}"]')).to_have_class(re.compile(status))
+            # Opposite sides of the world are available together in the flat view.
+            for code in ['US', 'NZ', 'JP', 'BR']:
+                assert page.locator(f'path[data-code="{code}"]').get_attribute('d')
+            folder = os.environ.get('BROWSER_ARTIFACT_DIR')
+            if folder:
+                Path(folder).mkdir(parents=True, exist_ok=True)
+                page.screenshot(path=str(Path(folder)/f'flat-world-{width}.png'), full_page=True)
+            for code, name in [('JP', 'Japan'), ('FJ', 'Fiji'), ('MC', 'Monaco')]:
+                page.locator('#atlas-search').fill(code)
+                page.locator('#atlas-results button').first.click()
+                expect(page.locator('#country-panel h2')).to_contain_text(name)
+                expect(page.locator('.globe-labels .selected')).to_have_text(name)
+                expect(page.locator(f'path[data-code="{code}"]')).to_have_class(re.compile('selected'))
+            page.locator('#country-panel').get_by_role('button', name='＋ Add a place', exact=True).click()
+            expect(page.locator('select[name=country]')).to_have_value('MC')
+            page.locator('#close-dialog').click()
+            page.locator('#atlas-region').select_option('Europe')
+            expect(svg).to_have_attribute('data-zoom', '2.400')
+            before = svg.get_attribute('data-pan')
+            surface = page.locator('#map-window')
+            surface.focus()
+            page.keyboard.press('ArrowRight')
+            expect(svg).not_to_have_attribute('data-pan', before)
+            rect = surface.bounding_box()
+            before = svg.get_attribute('data-pan')
+            page.mouse.move(rect['x']+rect['width']*.5, rect['y']+rect['height']*.7)
+            page.mouse.down()
+            page.mouse.move(rect['x']+rect['width']*.65, rect['y']+rect['height']*.72, steps=8)
+            page.mouse.up()
+            expect(svg).not_to_have_attribute('data-pan', before)
+            zoom = svg.get_attribute('data-zoom')
+            page.locator('#zoom-in').click()
+            expect(svg).not_to_have_attribute('data-zoom', zoom)
+            flat_zoom = svg.get_attribute('data-zoom')
+            page.get_by_role('button', name='Globe', exact=True).click()
+            expect(svg).to_have_attribute('data-view', 'globe')
+            expect(page.locator('#globe-ocean')).to_be_visible()
+            expect(page.locator('path[data-code=GE]')).to_have_class(re.compile('visited'))
+            page.get_by_role('button', name='Flat map', exact=True).click()
+            expect(svg).to_have_attribute('data-zoom', flat_zoom)
+            page.locator('#zoom-reset').click()
+            expect(svg).to_have_attribute('data-zoom', '1.000')
+            expect(svg).to_have_attribute('data-pan', '0,0')
+            page.reload()
+            expect(svg).to_have_attribute('data-view', 'flat')
+            expect(page.locator('#countries-total')).to_have_text('1')
+            page.locator('#atlas-search').fill('JP')
+            page.locator('#atlas-results button').first.click()
+            page.wait_for_function("document.querySelector('.globe-labels .selected')?.textContent === 'Japan'")
+            if folder:
+                page.screenshot(path=str(Path(folder)/f'flat-country-{width}.png'), full_page=True)
+            assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
+            # Preference failures must not prevent either map from rendering.
+            page.add_init_script("Storage.prototype.getItem = function(){throw new Error('blocked')}; Storage.prototype.setItem = function(){throw new Error('blocked')};")
+            page.reload()
+            expect(svg).to_have_attribute('data-view', 'globe')
+            page.get_by_role('button', name='Flat map', exact=True).click()
+            expect(svg).to_have_attribute('data-view', 'flat')
+            assert not errors
+            browser.close()
+    finally:
+        server.shutdown()
+        worker.join(timeout=5)
