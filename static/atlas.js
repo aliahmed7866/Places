@@ -23,6 +23,7 @@
     $('visible-count').textContent=`Countries in view (${codes.length})`;
     $('visible-countries').replaceChildren(...codes.map(code=>button(`${flag(code)} ${catalog.get(code)}`,()=>select(code))));
   }
+  $('border-contrast').onchange=e=>{$('atlas-layout').dataset.borders=e.target.value;};
   $('label-size').onchange=e=>{overlay.style.setProperty('--label-size',e.target.value+'px');draw();};
   $('map-expand').onclick=()=>{const expanded=$('atlas-layout').classList.toggle('expanded');$('map-expand').setAttribute('aria-pressed',String(expanded));$('map-expand').textContent=expanded?'Compact map':'Expand map';draw();};
   function draw(){if(!frame)frame=requestAnimationFrame(renderGlobe);}

@@ -26,6 +26,10 @@ def test_map_and_date_range_planner(tmp_path,monkeypatch,width):
             expect(page.locator('#map-view')).to_be_visible()
             expect(page.locator('#calendar-view')).to_be_hidden()
             globe=page.locator('.world-svg')
+            page.locator('#border-contrast').select_option('strong')
+            expect(page.locator('#atlas-layout')).to_have_attribute('data-borders','strong')
+            assert page.locator('path[data-code]').first.evaluate('(el)=>getComputedStyle(el).strokeWidth') == '1.7px'
+            page.locator('#border-contrast').select_option('clear')
             expect(globe).to_have_attribute('data-detail','continents')
             expect(page.locator('.globe-labels button[data-code]')).to_have_count(0)
             expect(page.get_by_role('button',name='Explore Africa',exact=True)).to_be_visible()
