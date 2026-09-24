@@ -6,7 +6,7 @@
   let svg,metadata={},countryAreas={},selected=null,requestId=0,dragged=false,features=[],rotation=[0,-20,0],magnification=1,frame=0;
   const pointers=new Map();let gesture;
   let view='globe',flatPan=[0,0];
-  const viewStates={globe:{zoom:1},flat:{zoom:1}};
+  const viewStates={globe:{zoom:1,region:'World'},flat:{zoom:1,region:'World'}};
   let projection=d3.geoOrthographic().clipAngle(90).precision(.4);
   const path=d3.geoPath(projection);
   const flatProjection=d3.geoNaturalEarth1().precision(.4);
@@ -28,8 +28,9 @@
   }
   function setView(next,persist=true){
     if(!['globe','flat'].includes(next))return;
-    viewStates[view].zoom=magnification;
+    viewStates[view]={zoom:magnification,region:$('atlas-region').value};
     view=next;magnification=viewStates[view].zoom;
+    $('atlas-region').value=viewStates[view].region;progress();
     projection=view==='flat'?flatProjection:globeProjection;path.projection(projection);
     pointers.clear();gesture=null;dragged=false;
     $('atlas-layout').dataset.view=view;
@@ -57,8 +58,8 @@
   $('border-contrast').onchange=e=>{$('atlas-layout').dataset.borders=e.target.value;};
   $('label-size').onchange=e=>{overlay.style.setProperty('--label-size',e.target.value+'px');draw();};
   $('map-expand').onclick=()=>{const expanded=$('atlas-layout').classList.toggle('expanded');$('map-expand').setAttribute('aria-pressed',String(expanded));$('map-expand').textContent=expanded?'Compact map':'Expand map';draw();};
-  function draw(){if(!frame)frame=requestAnimationFrame(renderGlobe);}
-  function renderGlobe(){
+  function draw(){if(!frame)frame=requestAnimationFrame(renderMap);}
+  function renderMap(){
     frame=0;if(!svg||!surface.clientWidth)return;
     const w=surface.clientWidth,h=surface.clientHeight,r=Math.min(w,h)*.44*magnification;
     svg.setAttribute('viewBox',`0 0 ${w} ${h}`);svg.dataset.zoom=magnification.toFixed(3);svg.dataset.rotation=rotation.join(',');svg.dataset.view=view;
